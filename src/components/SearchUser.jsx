@@ -7,7 +7,9 @@ const SearchUser = () => {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    const ws = new WebSocket(`ws://127.0.0.1:8000/ws/chatlist/?token=${token}`);
+    const ws = new WebSocket(
+      `https://web-chat-application-a0f4.onrender.com/ws/chatlist/?token=${token}`
+    );
 
     ws.onmessage = (e) => {
       const data = JSON.parse(e.data);
@@ -27,7 +29,7 @@ const SearchUser = () => {
     if (!token) return console.error("No token found!");
     try {
       const response = await axios.get(
-        `http://127.0.0.1:8000/api/auth/users/search/?search=${searchTerm}`,
+        `https://web-chat-application-a0f4.onrender.com/api/auth/users/search/?search=${searchTerm}`,
         {
           headers: { Authorization: `Token ${token}` },
         }

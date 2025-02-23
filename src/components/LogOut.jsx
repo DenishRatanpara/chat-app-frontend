@@ -4,7 +4,7 @@ export const LogOut = async (token) => {
   try {
     // Call the logout API
     await axios.post(
-      "http://127.0.0.1:8000/api/auth/logout/",
+      "https://web-chat-application-a0f4.onrender.com/api/auth/logout/",
       {},
       {
         headers: { Authorization: `Token ${token}` },

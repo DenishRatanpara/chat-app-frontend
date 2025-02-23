@@ -38,7 +38,7 @@ const ChatWindow = ({
     if (!otherUserId || otherUsername) return;
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/auth/users/${otherUserId}/`,
+        `https://web-chat-application-a0f4.onrender.com/api/auth/users/${otherUserId}/`,
         { headers: { Authorization: `Token ${token}` } }
       );
       setOtherUsername(response.data.username);

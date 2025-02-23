@@ -242,7 +242,7 @@ const Home = () => {
     const fetchChats = async () => {
       try {
         const response = await axios.get(
-          "http://127.0.0.1:8000/api/auth/users/",
+          "https://web-chat-application-a0f4.onrender.com/api/auth/users/",
           {
             headers: { Authorization: `Token ${token}` },
           }

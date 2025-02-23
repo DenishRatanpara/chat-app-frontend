@@ -40,7 +40,7 @@ const Register = () => {
       const config = { headers: { "Content-Type": "application/json" } };
       const body = JSON.stringify(newUser);
       const res = await axios.post(
-        "http://127.0.0.1:8000/api/auth/register/",
+        "https://web-chat-application-a0f4.onrender.com/api/auth/register/",
         body,
         config
       );

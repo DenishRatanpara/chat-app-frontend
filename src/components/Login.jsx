@@ -23,10 +23,13 @@ const Login = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await axios.post("http://127.0.0.1:8000/api/auth/login/", {
-        username,
-        password,
-      });
+      const res = await axios.post(
+        "https://web-chat-application-a0f4.onrender.com/api/auth/login/",
+        {
+          username,
+          password,
+        }
+      );
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user_id", res.data.user.id.toString());
       localStorage.setItem("username", res.data.user.username);

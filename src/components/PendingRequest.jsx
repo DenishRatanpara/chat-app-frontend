@@ -11,7 +11,7 @@ const PendingRequest = () => {
     const fetchRequests = async () => {
       try {
         const response = await axios.get(
-          "http://127.0.0.1:8000/api/auth/friend-requests/pending/",
+          "https://web-chat-application-a0f4.onrender.com/api/auth/friend-requests/pending/",
           {
             headers: { Authorization: `Token ${token}` },
           }
