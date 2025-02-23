@@ -276,6 +276,7 @@ const Home = () => {
 
   useEffect(() => {
     const wsUrl = `wss://web-chat-application-a0f4.onrender.com/ws/chatlist/?token=${token}`;
+
     socketRef.current = new WebSocket(wsUrl);
 
     socketRef.current.onopen = () => {
