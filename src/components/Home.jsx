@@ -275,7 +275,7 @@ const Home = () => {
   }, [searchQuery, chats]);
 
   useEffect(() => {
-    const wsUrl = `ws://127.0.0.1:8000/ws/chatlist/?token=${token}`;
+    const wsUrl = `https://web-chat-application-a0f4.onrender.com/ws/chatlist/?token=${token}`;
     socketRef.current = new WebSocket(wsUrl);
 
     socketRef.current.onopen = () => {

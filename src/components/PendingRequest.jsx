@@ -33,7 +33,7 @@ const PendingRequest = () => {
   const handleAccept = async (requestId, fromUserId) => {
     try {
       await axios.patch(
-        `http://127.0.0.1:8000/api/auth/friend-requests/accept/${requestId}/`,
+        `https://web-chat-application-a0f4.onrender.com/api/auth/friend-requests/accept/${requestId}/`,
         {},
         {
           headers: { Authorization: `Token ${token}` },
@@ -54,7 +54,7 @@ const PendingRequest = () => {
   const handleReject = async (requestId) => {
     try {
       await axios.patch(
-        `http://127.0.0.1:8000/api/auth/friend-requests/reject/${requestId}/`,
+        `https://web-chat-application-a0f4.onrender.com/api/auth/friend-requests/reject/${requestId}/`,
         {},
         {
           headers: { Authorization: `Token ${token}` },
