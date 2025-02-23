@@ -90,7 +90,7 @@ const ChatWindow = ({
 
     if (!token || token === "null") return;
 
-    const wsUrl = `wss://web-chat-application-a0f4.onrender.com /ws/chat/${otherUserId}/?token=${token}`;
+    const wsUrl = `wss://web-chat-application-a0f4.onrender.com/ws/chat/${otherUserId}/?token=${token}`;
     ws.current = new W3CWebSocket(wsUrl);
 
     ws.current.onopen = () => {

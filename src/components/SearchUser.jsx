@@ -8,7 +8,7 @@ const SearchUser = () => {
 
   useEffect(() => {
     const ws = new WebSocket(
-      `wss://web-chat-application-a0f4.onrender.com /ws/chatlist/?token=${token}`
+      `wss://web-chat-application-a0f4.onrender.com/ws/chatlist/?token=${token}`
     );
 
     ws.onmessage = (e) => {
@@ -43,7 +43,7 @@ const SearchUser = () => {
   const sendRequest = async (userId) => {
     try {
       await axios.post(
-        "http://127.0.0.1:8000/api/auth/friend-requests/send/",
+        "https://web-chat-application-a0f4.onrender.com/api/auth/friend-requests/send/",
         { to_user: userId },
         { headers: { Authorization: `Token ${token}` } }
       );
