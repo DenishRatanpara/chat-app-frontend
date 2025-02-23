@@ -8,7 +8,7 @@ const SearchUser = () => {
 
   useEffect(() => {
     const ws = new WebSocket(
-      `https://web-chat-application-a0f4.onrender.com/ws/chatlist/?token=${token}`
+      `wss://web-chat-application-a0f4.onrender.com /ws/chatlist/?token=${token}`
     );
 
     ws.onmessage = (e) => {
