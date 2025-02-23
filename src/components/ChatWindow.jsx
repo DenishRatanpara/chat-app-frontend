@@ -51,7 +51,7 @@ const ChatWindow = ({
     if (!otherUserId || !currentUserId) return;
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/auth/messages/${otherUserId}/`,
+        `https://web-chat-application-a0f4.onrender.com/api/auth/messages/${otherUserId}/`,
         { headers: { Authorization: `Token ${token}` } }
       );
       setMessages(
@@ -90,7 +90,7 @@ const ChatWindow = ({
 
     if (!token || token === "null") return;
 
-    const wsUrl = `ws://localhost:8000/ws/chat/${otherUserId}/?token=${token}`;
+    const wsUrl = `https://web-chat-application-a0f4.onrender.com/ws/chat/${otherUserId}/?token=${token}`;
     ws.current = new W3CWebSocket(wsUrl);
 
     ws.current.onopen = () => {
