@@ -146,7 +146,7 @@ const ChatWindow = ({
     >
       {/* Header */}
       <div className="bg-[#075E54] text-white px-4 py-3 flex items-center justify-between shadow-md">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 ml-4">
           <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
             <span className="text-[#075E54] font-semibold">
               {otherUsername?.[0]?.toUpperCase() || "?"}
@@ -269,4 +269,3 @@ const ChatWindow = ({
 };
 
 export default ChatWindow;
-

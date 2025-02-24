@@ -304,9 +304,9 @@ const Home = () => {
       {isMobileView && (
         <button
           onClick={handleBackToList}
-          className="absolute top-4 left-4 z-10 text-white"
+          className="absolute top-4 left-1 z-10 text-white "
         >
-          <ArrowLeft className="h-6 w-6" />
+          <ArrowLeft className="h-6 w-7  " />
         </button>
       )}
       <ChatWindow
