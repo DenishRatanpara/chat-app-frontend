@@ -1,3 +1,5 @@
+//responsive
+
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import axios from "axios";
@@ -21,6 +23,7 @@ const ChatWindow = ({
   token,
   currentUserId,
   currentUsername,
+  isDarkMode,
 }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
@@ -136,7 +139,11 @@ const ChatWindow = ({
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
+    <div
+      className={`flex flex-col h-screen ${
+        isDarkMode ? "bg-gray-900" : "bg-gray-100"
+      }`}
+    >
       {/* Header */}
       <div className="bg-[#075E54] text-white px-4 py-3 flex items-center justify-between shadow-md">
         <div className="flex items-center space-x-3">
@@ -165,12 +172,22 @@ const ChatWindow = ({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto bg-[#E5DDD5] p-4">
+      <div
+        className={`flex-1 overflow-y-auto p-4 ${
+          isDarkMode ? "bg-gray-800" : "bg-[#E5DDD5]"
+        }`}
+      >
         {Object.entries(groupMessagesByDate(messages)).map(
           ([date, dateMessages]) => (
             <div key={date} className="space-y-4">
               <div className="flex justify-center">
-                <span className="bg-white rounded-lg px-3 py-1 text-xs text-gray-500 shadow">
+                <span
+                  className={`${
+                    isDarkMode
+                      ? "bg-gray-700 text-gray-300"
+                      : "bg-white text-gray-500"
+                  } rounded-lg px-3 py-1 text-xs shadow`}
+                >
                   {date}
                 </span>
               </div>
@@ -186,7 +203,11 @@ const ChatWindow = ({
                   <div
                     className={`max-w-[70%] rounded-lg px-4 py-2 shadow ${
                       msg.sender_id === currentUserId
-                        ? "bg-[#DCF8C6]"
+                        ? isDarkMode
+                          ? "bg-[#056162] text-white"
+                          : "bg-[#DCF8C6]"
+                        : isDarkMode
+                        ? "bg-gray-700 text-white"
                         : "bg-white"
                     }`}
                   >
@@ -195,8 +216,16 @@ const ChatWindow = ({
                         {msg.sender_username}
                       </div>
                     )}
-                    <div className="text-gray-800">{msg.message}</div>
-                    <div className="text-right text-xs text-gray-500 mt-1">
+                    <div
+                      className={isDarkMode ? "text-gray-100" : "text-gray-800"}
+                    >
+                      {msg.message}
+                    </div>
+                    <div
+                      className={`text-right text-xs ${
+                        isDarkMode ? "text-gray-400" : "text-gray-500"
+                      } mt-1`}
+                    >
                       {new Date(msg.timestamp).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
@@ -212,7 +241,7 @@ const ChatWindow = ({
       </div>
 
       {/* Input Area */}
-      <div className="bg-gray-50 px-4 py-3">
+      <div className={`px-4 py-3 ${isDarkMode ? "bg-gray-800" : "bg-gray-50"}`}>
         <div className="flex items-center space-x-2">
           <input
             type="text"
@@ -220,7 +249,11 @@ const ChatWindow = ({
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && sendMessage()}
             placeholder="Type a message"
-            className="flex-1 rounded-full px-4 py-2 border border-gray-300 focus:outline-none focus:border-[#075E54] focus:ring-1 focus:ring-[#075E54]"
+            className={`flex-1 rounded-full px-4 py-2 border ${
+              isDarkMode
+                ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-[#075E54]"
+                : "bg-white border-gray-300 focus:border-[#075E54]"
+            } focus:outline-none focus:ring-1 focus:ring-[#075E54]`}
           />
           <button
             onClick={sendMessage}
@@ -236,3 +269,4 @@ const ChatWindow = ({
 };
 
 export default ChatWindow;
+
