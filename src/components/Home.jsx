@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import gsap from "gsap";
 import ChatWindow from "./ChatWindow";
 import PendingRequest from "./PendingRequest";
 import SearchUser from "./SearchUser";
@@ -25,55 +26,40 @@ const Home = () => {
   const [showChatList, setShowChatList] = useState(true);
   const navigate = useNavigate();
   const socketRef = useRef(null);
+  const chatListRef = useRef(null);
+  const searchBarRef = useRef(null);
+  const welcomeMessageRef = useRef(null);
 
   const token = localStorage.getItem("token");
   const currentUserId = localStorage.getItem("user_id");
   const currentUsername = localStorage.getItem("username");
 
   useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobileView(mobile);
-      if (!mobile) {
-        setShowChatList(true);
-      }
-    };
+    // Initial animations
+    gsap.from(searchBarRef.current, {
+      y: -20,
+      opacity: 0,
+      duration: 0.5,
+      ease: "power2.out",
+    });
 
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    gsap.from(chatListRef.current, {
+      x: -30,
+      opacity: 0,
+      duration: 0.6,
+      ease: "power2.out",
+      stagger: 0.1,
+    });
+
+    if (welcomeMessageRef.current) {
+      gsap.from(welcomeMessageRef.current, {
+        scale: 0.9,
+        opacity: 0,
+        duration: 0.5,
+        ease: "back.out",
+      });
+    }
   }, []);
-
-  useEffect(() => {
-    if (isMobileView && selectedUser) {
-      setShowChatList(false);
-    }
-  }, [selectedUser, isMobileView]);
-
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
-  const handleUserSelect = (user) => {
-    setSelectedUser(user);
-    if (isMobileView) {
-      setShowChatList(false);
-    }
-  };
-
-  const handleBackToList = () => {
-    if (isMobileView) {
-      setShowChatList(true);
-      setSelectedUser(null);
-    }
-  };
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user_id");
-    localStorage.removeItem("username");
-    navigate("/login");
-  };
-
   useEffect(() => {
     const fetchChats = async () => {
       try {
@@ -98,67 +84,119 @@ const Home = () => {
   }, [token, navigate]);
 
   useEffect(() => {
-    if (searchQuery) {
-      const filtered = chats.filter((chat) =>
-        chat.other_user_username
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase())
-      );
-      setFilteredChats(filtered);
-    } else {
-      setFilteredChats(chats);
+    // Animate chat list items when filtered
+    if (chatListRef.current) {
+      gsap.from(chatListRef.current.children, {
+        x: -20,
+        opacity: 0,
+        duration: 0.3,
+        stagger: 0.05,
+        ease: "power2.out",
+      });
     }
-  }, [searchQuery, chats]);
+  }, [filteredChats]);
 
   useEffect(() => {
-    const wsUrl = `wss://web-chat-application-a0f4.onrender.com/ws/chatlist/?token=${token}`;
-
-    socketRef.current = new WebSocket(wsUrl);
-
-    socketRef.current.onopen = () => {
-      console.log("WebSocket connection for chat list established");
-    };
-
-    socketRef.current.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setChats((prevChats) => {
-        const updatedChats = prevChats.map((chat) =>
-          chat.other_user_id.toString() === data.other_user_id.toString()
-            ? {
-                ...chat,
-                latest_message_content: data.message,
-                latest_message_time: data.timestamp,
-              }
-            : chat
-        );
-        return updatedChats.sort(
-          (a, b) =>
-            new Date(b.latest_message_time) - new Date(a.latest_message_time)
-        );
-      });
-    };
-
-    socketRef.current.onerror = (error) => {
-      console.error("WebSocket error:", error);
-    };
-
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.close();
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobileView(mobile);
+      if (!mobile) {
+        setShowChatList(true);
       }
     };
-  }, [token]);
 
-  function formatTimestamp(timestamp) {
-    const messageDate = new Date(timestamp);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (isMobileView && selectedUser) {
+      setShowChatList(false);
+    }
+  }, [selectedUser, isMobileView]);
+
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+    // Animate theme transition
+    gsap.to("body", {
+      backgroundColor: isDarkMode ? "#f3f4f6" : "#111827",
+      duration: 0.3,
+      ease: "power2.inOut",
+    });
+  };
+
+  const handleUserSelect = (user) => {
+    // Animate chat transition
+    if (isMobileView) {
+      gsap.to(chatListRef.current, {
+        x: -30,
+        opacity: 0,
+        duration: 0.3,
+        ease: "power2.inOut",
+        onComplete: () => {
+          setSelectedUser(user);
+          setShowChatList(false);
+        },
+      });
+    } else {
+      setSelectedUser(user);
+    }
+  };
+
+  const handleBackToList = () => {
+    if (isMobileView) {
+      gsap.to(".chat-window", {
+        x: 30,
+        opacity: 0,
+        duration: 0.3,
+        ease: "power2.inOut",
+        onComplete: () => {
+          setShowChatList(true);
+          setSelectedUser(null);
+          gsap.from(chatListRef.current, {
+            x: -30,
+            opacity: 0,
+            duration: 0.3,
+            ease: "power2.out",
+          });
+        },
+      });
+    }
+  };
+
+  const logout = () => {
+    gsap.to(".app-container", {
+      opacity: 0,
+      y: 20,
+      duration: 0.3,
+      ease: "power2.inOut",
+      onComplete: () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user_id");
+        localStorage.removeItem("username");
+        navigate("/login");
+      },
+    });
+  };
+
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return "";
+    const date = new Date(timestamp);
     const now = new Date();
-    return now - messageDate < 86400000
-      ? messageDate.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-      : messageDate.toLocaleDateString();
-  }
+    const diff = now - date;
+    const oneDay = 24 * 60 * 60 * 1000;
+
+    if (diff < oneDay) {
+      return date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } else if (diff < 7 * oneDay) {
+      return date.toLocaleDateString([], { weekday: "short" });
+    } else {
+      return date.toLocaleDateString([], { month: "short", day: "numeric" });
+    }
+  };
 
   const chatListContent = (
     <div
@@ -199,6 +237,7 @@ const Home = () => {
         </div>
       </div>
       <div
+        ref={searchBarRef}
         className={`p-3 border-b ${
           isDarkMode ? "border-gray-700" : "border-gray-200"
         }`}
@@ -230,7 +269,7 @@ const Home = () => {
           <SearchUser />
         </div>
       )}
-      <div className="flex-1 overflow-y-auto">
+      <div ref={chatListRef} className="flex-1 overflow-y-auto">
         {filteredChats.length > 0 ? (
           filteredChats.map((chat) => (
             <div
@@ -300,13 +339,13 @@ const Home = () => {
   );
 
   const chatWindowContent = selectedUser ? (
-    <div className="flex-1 relative">
+    <div className="flex-1 relative chat-window">
       {isMobileView && (
         <button
           onClick={handleBackToList}
-          className="absolute top-4 left-1 z-10 text-white "
+          className="absolute top-4 left-1 z-10 text-white"
         >
-          <ArrowLeft className="h-6 w-7  " />
+          <ArrowLeft className="h-6 w-7" />
         </button>
       )}
       <ChatWindow
@@ -320,6 +359,7 @@ const Home = () => {
     </div>
   ) : (
     <div
+      ref={welcomeMessageRef}
       className={`hidden md:flex h-full items-center justify-center ${
         isDarkMode ? "bg-gray-900" : "bg-[#F0F2F5]"
       }`}
@@ -344,7 +384,9 @@ const Home = () => {
 
   return (
     <div
-      className={`flex h-screen ${isDarkMode ? "bg-gray-900" : "bg-gray-100"}`}
+      className={`flex h-screen app-container ${
+        isDarkMode ? "bg-gray-900" : "bg-gray-100"
+      }`}
     >
       {(!isMobileView || showChatList) && chatListContent}
       {(!isMobileView || !showChatList) && chatWindowContent}

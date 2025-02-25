@@ -1,9 +1,8 @@
-//responsive
-
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import axios from "axios";
 import { Send, Wifi, WifiOff } from "lucide-react";
+import gsap from "gsap";
 
 const groupMessagesByDate = (messages) => {
   const groups = {};
@@ -31,10 +30,47 @@ const ChatWindow = ({
   const [otherUsername, setOtherUsername] = useState(initialOtherUsername);
   const ws = useRef(null);
   const messagesEndRef = useRef(null);
+  const headerRef = useRef(null);
+  const inputAreaRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+
+  // Initial animations
+  useEffect(() => {
+    // Animate header
+    gsap.from(headerRef.current, {
+      y: -50,
+      opacity: 0,
+      duration: 0.5,
+      ease: "power2.out",
+    });
+
+    // Animate messages container
+    gsap.from(messagesContainerRef.current, {
+      opacity: 0,
+      duration: 0.5,
+      delay: 0.2,
+      ease: "power2.out",
+    });
+
+    // Animate input area
+    gsap.from(inputAreaRef.current, {
+      y: 50,
+      opacity: 0,
+      duration: 0.5,
+      ease: "power2.out",
+    });
+  }, []);
 
   useEffect(() => {
     setMessages([]);
     setOtherUsername(initialOtherUsername);
+
+    // Animate transition when changing chat
+    gsap.fromTo(
+      messagesContainerRef.current,
+      { opacity: 0, x: 20 },
+      { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }
+    );
   }, [otherUserId, initialOtherUsername]);
 
   const fetchUsername = useCallback(async () => {
@@ -73,15 +109,34 @@ const ChatWindow = ({
   const handleWebSocketMessage = useCallback((e) => {
     try {
       const data = JSON.parse(e.data);
-      setMessages((prev) => [
-        ...prev,
-        {
-          message: data.message,
-          sender_id: data.sender_id,
-          sender_username: data.sender_username,
-          timestamp: data.timestamp,
-        },
-      ]);
+      setMessages((prev) => {
+        const newMessages = [
+          ...prev,
+          {
+            message: data.message,
+            sender_id: data.sender_id,
+            sender_username: data.sender_username,
+            timestamp: data.timestamp,
+          },
+        ];
+
+        // Animate new message
+        setTimeout(() => {
+          const lastMessage = document.querySelector(
+            ".message-bubble:last-child"
+          );
+          if (lastMessage) {
+            gsap.from(lastMessage, {
+              scale: 0.8,
+              opacity: 0,
+              duration: 0.3,
+              ease: "back.out(1.7)",
+            });
+          }
+        }, 0);
+
+        return newMessages;
+      });
     } catch (error) {
       console.error("Error processing message:", error);
     }
@@ -123,7 +178,13 @@ const ChatWindow = ({
   ]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef.current) {
+      gsap.to(messagesContainerRef.current, {
+        scrollTop: messagesEndRef.current.offsetTop,
+        duration: 0.3,
+        ease: "power2.out",
+      });
+    }
   }, [messages]);
 
   const sendMessage = () => {
@@ -135,7 +196,25 @@ const ChatWindow = ({
         })
       );
       setNewMessage("");
+
+      // Animate send button
+      gsap.from(".send-button", {
+        rotate: 360,
+        duration: 0.5,
+        ease: "power2.out",
+      });
     }
+  };
+
+  const handleConnectionStatusChange = (status) => {
+    setConnectionStatus(status);
+    // Animate connection status change
+    gsap.from(".connection-status", {
+      y: -10,
+      opacity: 0,
+      duration: 0.3,
+      ease: "power2.out",
+    });
   };
 
   return (
@@ -145,7 +224,10 @@ const ChatWindow = ({
       }`}
     >
       {/* Header */}
-      <div className="bg-[#075E54] text-white px-4 py-3 flex items-center justify-between shadow-md">
+      <div
+        ref={headerRef}
+        className="bg-[#075E54] text-white px-4 py-3 flex items-center justify-between shadow-md"
+      >
         <div className="flex items-center space-x-3 ml-4">
           <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
             <span className="text-[#075E54] font-semibold">
@@ -156,7 +238,7 @@ const ChatWindow = ({
             <div className="font-semibold">
               {otherUsername || `User ${otherUserId}`}
             </div>
-            <div className="text-xs flex items-center">
+            <div className="text-xs flex items-center connection-status">
               {connectionStatus === "connected" ? (
                 <>
                   <Wifi className="w-3 h-3 mr-1" /> Online
@@ -173,6 +255,7 @@ const ChatWindow = ({
 
       {/* Messages */}
       <div
+        ref={messagesContainerRef}
         className={`flex-1 overflow-y-auto p-4 ${
           isDarkMode ? "bg-gray-800" : "bg-[#E5DDD5]"
         }`}
@@ -194,7 +277,7 @@ const ChatWindow = ({
               {dateMessages.map((msg, i) => (
                 <div
                   key={i}
-                  className={`flex ${
+                  className={`flex message-bubble ${
                     msg.sender_id === currentUserId
                       ? "justify-end"
                       : "justify-start"
@@ -241,7 +324,10 @@ const ChatWindow = ({
       </div>
 
       {/* Input Area */}
-      <div className={`px-4 py-3 ${isDarkMode ? "bg-gray-800" : "bg-gray-50"}`}>
+      <div
+        ref={inputAreaRef}
+        className={`px-4 py-3 ${isDarkMode ? "bg-gray-800" : "bg-gray-50"}`}
+      >
         <div className="flex items-center space-x-2">
           <input
             type="text"
@@ -258,7 +344,7 @@ const ChatWindow = ({
           <button
             onClick={sendMessage}
             disabled={!newMessage.trim()}
-            className="bg-[#075E54] text-white rounded-full p-2 hover:bg-[#054c44] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="send-button bg-[#075E54] text-white rounded-full p-2 hover:bg-[#054c44] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send className="w-5 h-5" />
           </button>
