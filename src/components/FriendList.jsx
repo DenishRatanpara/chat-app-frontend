@@ -1,11 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { Users, UserPlus } from "lucide-react";
+import { w3cwebsocket as W3CWebSocket } from "websocket";
 
 const FriendList = ({ onSelectFriend }) => {
   const token = localStorage.getItem("token");
   const [friends, setFriends] = useState([]);
+  const [onlineStatus, setOnlineStatus] = useState({});
+  const ws = useRef(null);
 
+  // Fetch friends from the updated API
   useEffect(() => {
     const fetchFriends = async () => {
       try {
@@ -20,7 +24,44 @@ const FriendList = ({ onSelectFriend }) => {
         console.error("Error fetching friend list:", error);
       }
     };
-    fetchFriends();
+
+    if (token) {
+      fetchFriends();
+    }
+  }, [token]);
+
+  // Establish WebSocket connection for online status updates
+  useEffect(() => {
+    if (!token) return;
+
+    const wsUrl = `wss://web-chat-application-a0f4.onrender.com/ws/chatlist/?token=${token}`;
+    ws.current = new W3CWebSocket(wsUrl);
+
+    ws.current.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data);
+        if (data.type === "status") {
+          setOnlineStatus((prev) => ({
+            ...prev,
+            [data.user_id]: data.status === "online",
+          }));
+        }
+      } catch (error) {
+        console.error("Error processing status update:", error);
+      }
+    };
+
+    ws.current.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    ws.current.onclose = () => {
+      console.log("WebSocket connection closed.");
+    };
+
+    return () => {
+      if (ws.current) ws.current.close();
+    };
   }, [token]);
 
   return (
@@ -41,10 +82,13 @@ const FriendList = ({ onSelectFriend }) => {
             <div
               key={friend.id}
               onClick={() => onSelectFriend(friend)}
-              className="flex items-center p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+              className="relative flex items-center p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
             >
-              <div className="w-10 h-10 bg-[#075E54] rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+              <div className="w-10 h-10 bg-[#075E54] rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 relative">
                 {friend.username[0].toUpperCase()}
+                {onlineStatus[friend.id] && (
+                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                )}
               </div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-gray-900">
